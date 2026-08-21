@@ -24,12 +24,13 @@ services:
     volumes:
       - ./infra/postgres:/migrations:ro
     entrypoint: ["/bin/sh", "-ec"]
-    command: >-
-      for file in /migrations/0*.sql; do
-        echo "Applying $$file";
-        PGPASSWORD="$$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1
-          -h postgres -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f "$$file";
-      done
+    command:
+      - |
+        for file in /migrations/0*.sql; do
+          echo "Applying $$file"
+          PGPASSWORD="$$POSTGRES_PASSWORD" psql -v ON_ERROR_STOP=1 \
+            -h postgres -U "$$POSTGRES_USER" -d "$$POSTGRES_DB" -f "$$file"
+        done
     restart: "no"
 
   redis:

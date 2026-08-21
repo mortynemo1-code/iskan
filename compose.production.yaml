@@ -20,7 +20,7 @@ services:
       - ./infra/tls:/etc/nginx/tls:ro
       - certbot_web:/var/www/certbot:ro
     healthcheck:
-      test: ["CMD", "wget", "--no-check-certificate", "-q", "-O", "-", "https://localhost/api/v1/health"]
+      test: ["CMD", "wget", "--no-check-certificate", "-q", "-O", "-", "https://127.0.0.1/api/v1/health"]
 
 volumes:
   certbot_web:

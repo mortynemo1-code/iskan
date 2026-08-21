@@ -1,0 +1,13 @@
+import { useCallback, useEffect, useState } from "react";
+
+type Account = { id: string; device_id: string; hostname: string; sid: string; username: string; employee_id: string | null; employee_name: string | null; quarantined_events: number };
+type Employee = { id: string; full_name: string };
+
+export function WindowsAccountsAdmin() {
+  const [accounts, setAccounts] = useState<Account[]>([]); const [employees, setEmployees] = useState<Employee[]>([]);
+  const [selected, setSelected] = useState<Record<string, string>>({}); const [message, setMessage] = useState<string | null>(null);
+  const load = useCallback(async () => { const [a, e] = await Promise.all([fetch("/api/v1/admin/windows-accounts"), fetch("/api/v1/admin/employees")]); if (a.ok) setAccounts(await a.json()); if (e.ok) setEmployees(await e.json()); }, []);
+  useEffect(() => { void load(); }, [load]);
+  const map = async (account: Account) => { const employeeId = selected[account.id] ?? account.employee_id; if (!employeeId) return; const response = await fetch(`/api/v1/admin/windows-accounts/${account.id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ employee_id: employeeId }) }); setMessage(response.ok ? "Учётная запись сопоставлена, карантинные события перенесены" : `Ошибка: HTTP ${response.status}`); if (response.ok) await load(); };
+  return <section className="admin-section"><div className="section-heading compact"><div><p className="eyebrow">Несколько пользователей на ПК</p><h2>Учётные записи Windows</h2></div><span className="section-count">{accounts.filter((item) => !item.employee_id).length}</span></div>{message && <div className="notice">{message}</div>}<div className="admin-card windows-accounts-list">{accounts.length === 0 ? <p className="admin-empty">Агент ещё не передавал сведения об учётных записях.</p> : accounts.map((account) => <article key={account.id} className={account.employee_id ? "mapped" : "unknown"}><span><strong>{account.username}</strong><small>{account.hostname} · {account.sid}</small></span>{account.quarantined_events > 0 && <em>{account.quarantined_events} событий в карантине</em>}<select value={selected[account.id] ?? account.employee_id ?? ""} onChange={(event) => setSelected((current) => ({ ...current, [account.id]: event.target.value }))}><option value="">Выберите сотрудника</option>{employees.map((employee) => <option value={employee.id} key={employee.id}>{employee.full_name}</option>)}</select><button className="primary-button" disabled={!(selected[account.id] ?? account.employee_id)} onClick={() => void map(account)}>Сопоставить</button></article>)}</div></section>;
+}

@@ -1,0 +1,28 @@
+logLevel: info
+api: true
+apiAddress: :9997
+metrics: true
+metricsAddress: :9998
+playback: true
+playbackAddress: :9996
+playbackAllowOrigins: ["*"]
+webrtc: true
+webrtcAddress: :8889
+webrtcLocalUDPAddress: :8189
+hls: true
+hlsAddress: :8888
+hlsAllowOrigins: ["*"]
+
+pathDefaults:
+  source: publisher
+  overridePublisher: false
+  record: true
+  recordPath: /recordings/%path/%Y-%m-%d_%H-%M-%S-%f
+  recordFormat: fmp4
+  recordPartDuration: 1s
+  recordMaxPartSize: 50M
+  recordSegmentDuration: 5m
+  recordDeleteAfter: 7d
+
+paths:
+  all_others:

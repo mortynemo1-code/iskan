@@ -1,0 +1,28 @@
+groups:
+  - name: workforce
+    rules:
+      - alert: WorkforceManyAgentsOffline
+        expr: workforce_agents_approved > 0 and workforce_agents_online / workforce_agents_approved < 0.7
+        for: 10m
+        labels: { severity: warning }
+        annotations: { summary: "Более 30% агентов офлайн" }
+      - alert: WorkforceReportFailures
+        expr: workforce_report_failures_day > 0
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "Есть ошибки рассылки отчётов" }
+      - alert: WorkforceCommandBacklog
+        expr: workforce_agent_commands_pending > 50
+        for: 5m
+        labels: { severity: warning }
+        annotations: { summary: "Очередь команд агентам растёт" }
+      - alert: WorkforceStoragePressure
+        expr: storage_free_percent < 15
+        for: 5m
+        labels: { severity: critical }
+        annotations: { summary: "Свободно менее 15% видеохранилища" }
+      - alert: WorkforceServiceDown
+        expr: up{job=~"workforce-api|mediamtx"} == 0
+        for: 2m
+        labels: { severity: critical }
+        annotations: { summary: "Компонент Workforce Monitoring недоступен" }

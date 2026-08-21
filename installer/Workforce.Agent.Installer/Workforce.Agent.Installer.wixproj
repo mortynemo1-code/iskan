@@ -1,0 +1,14 @@
+<Project Sdk="WixToolset.Sdk/5.0.2">
+  <PropertyGroup>
+    <OutputType>Package</OutputType>
+    <Platform>x64</Platform>
+    <Cultures>ru-RU</Cultures>
+    <Version Condition="'$(Version)' == ''">1.0.0</Version>
+    <DefineConstants>ProductVersion=$(Version)</DefineConstants>
+    <AgentPublish Condition="'$(AgentPublish)' == ''">..\..\publish\service</AgentPublish>
+    <SessionPublish Condition="'$(SessionPublish)' == ''">..\..\publish\session</SessionPublish>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />
+  </ItemGroup>
+</Project>

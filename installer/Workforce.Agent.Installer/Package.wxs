@@ -1,0 +1,64 @@
+<Wix xmlns="http://wixtoolset.org/schemas/v4/wxs"
+     xmlns:util="http://wixtoolset.org/schemas/v4/wxs/util">
+  <Package Name="Workforce Monitoring Agent"
+           Manufacturer="Workforce Monitoring"
+           Version="$(var.ProductVersion)"
+           UpgradeCode="F6864568-E6F5-46D2-8C75-D6774D25692B"
+           Scope="perMachine">
+    <SummaryInformation Description="Visible corporate workforce monitoring agent" />
+    <MajorUpgrade DowngradeErrorMessage="Установлена более новая версия Workforce Monitoring Agent." />
+    <MediaTemplate EmbedCab="yes" CompressionLevel="high" />
+
+    <Property Id="TOKEN" Secure="yes" />
+    <Property Id="SERVER" Secure="yes" Value="https://workforce.local" />
+    <Launch Condition="Installed OR TOKEN" Message="Укажите installation token: TOKEN=..." />
+
+    <StandardDirectory Id="ProgramFiles64Folder">
+      <Directory Id="INSTALLFOLDER" Name="Workforce Monitoring">
+        <Directory Id="SESSIONFOLDER" Name="session" />
+      </Directory>
+    </StandardDirectory>
+
+    <StandardDirectory Id="CommonAppDataFolder">
+      <Directory Id="DATAROOT" Name="WorkforceMonitoring" />
+    </StandardDirectory>
+
+    <DirectoryRef Id="INSTALLFOLDER">
+      <Component Id="AgentService" Guid="*" Bitness="always64">
+        <File Id="AgentExe" Source="$(var.AgentPublish)\Workforce.Agent.exe" KeyPath="yes" />
+        <Environment Id="ServerEnvironment" Name="Agent__ServerUrl" Value="[SERVER]" Action="set" System="yes" Permanent="no" />
+        <Environment Id="TokenEnvironment" Name="Agent__InstallationToken" Value="[TOKEN]" Action="set" System="yes" Permanent="no" />
+        <Environment Id="SessionEnvironment" Name="Agent__SessionAgentPath" Value="[SESSIONFOLDER]Workforce.SessionAgent.exe" Action="set" System="yes" Permanent="no" />
+        <ServiceInstall Id="InstallService" Name="WorkforceMonitoringAgent"
+                        DisplayName="Workforce Monitoring Agent" Description="Corporate activity collection service"
+                        Type="ownProcess" Start="auto" ErrorControl="normal" Account="LocalSystem">
+          <util:ServiceConfig FirstFailureActionType="restart" SecondFailureActionType="restart"
+                              ThirdFailureActionType="restart" RestartServiceDelayInSeconds="15" ResetPeriodInDays="1" />
+        </ServiceInstall>
+        <ServiceControl Id="ControlService" Name="WorkforceMonitoringAgent" Start="install" Stop="both" Remove="uninstall" Wait="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="SESSIONFOLDER">
+      <Component Id="SessionAgent" Guid="*" Bitness="always64">
+        <File Id="SessionExe" Source="$(var.SessionPublish)\Workforce.SessionAgent.exe" KeyPath="yes" />
+        <File Id="FfmpegExe" Source="$(var.SessionPublish)\ffmpeg.exe" />
+      </Component>
+    </DirectoryRef>
+
+    <DirectoryRef Id="DATAROOT">
+      <Component Id="DataDirectory" Guid="*" Bitness="always64">
+        <CreateFolder>
+          <PermissionEx Sddl="D:PAI(A;OICI;FA;;;SY)(A;OICI;FA;;;BA)(A;OICI;GRGX;;;BU)" />
+        </CreateFolder>
+        <RegistryValue Root="HKLM" Key="Software\WorkforceMonitoring" Name="Installed" Type="integer" Value="1" KeyPath="yes" />
+      </Component>
+    </DirectoryRef>
+
+    <Feature Id="MainFeature" Title="Workforce Monitoring Agent" Level="1">
+      <ComponentRef Id="AgentService" />
+      <ComponentRef Id="SessionAgent" />
+      <ComponentRef Id="DataDirectory" />
+    </Feature>
+  </Package>
+</Wix>

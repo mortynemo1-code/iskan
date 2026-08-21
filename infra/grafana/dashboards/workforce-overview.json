@@ -1,0 +1,18 @@
+{
+  "annotations": {"list": []},
+  "editable": true,
+  "panels": [
+    {"type":"stat","title":"Агенты онлайн","id":1,"gridPos":{"x":0,"y":0,"w":6,"h":5},"targets":[{"expr":"workforce_agents_online","refId":"A"}]},
+    {"type":"stat","title":"Live-потоки","id":2,"gridPos":{"x":6,"y":0,"w":6,"h":5},"targets":[{"expr":"workforce_live_streams","refId":"A"}]},
+    {"type":"timeseries","title":"Событий за минуту","id":3,"gridPos":{"x":0,"y":5,"w":12,"h":8},"targets":[{"expr":"workforce_ingest_events_last_minute","refId":"A"}]},
+    {"type":"logs","title":"Логи сервисов","id":4,"gridPos":{"x":12,"y":0,"w":12,"h":13},"datasource":{"type":"loki","uid":"Loki"},"targets":[{"expr":"{container=~\".*(api|worker|mediamtx).*\"}","refId":"A"}]}
+  ],
+  "schemaVersion": 41,
+  "tags": ["workforce"],
+  "templating": {"list": []},
+  "time": {"from":"now-6h","to":"now"},
+  "timezone": "browser",
+  "title": "Workforce Monitoring — обзор",
+  "uid": "workforce-overview",
+  "version": 1
+}

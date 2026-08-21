@@ -1,0 +1,59 @@
+name: CI
+on:
+  push:
+  pull_request:
+
+jobs:
+  backend-web:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with: { python-version: "3.12", cache: pip }
+      - run: pip install -e './backend[dev]'
+      - run: pytest -q backend/tests
+      - uses: actions/setup-node@v4
+        with: { node-version: "22", cache: npm, cache-dependency-path: web/package-lock.json }
+      - run: npm ci
+        working-directory: web
+      - run: npm run build
+        working-directory: web
+  windows-agent:
+    runs-on: windows-latest
+    env:
+      SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
+      SIGNING_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "8.0.x" }
+      - run: dotnet test agent/Workforce.Agent.Shared.Tests/Workforce.Agent.Shared.Tests.csproj -c Release
+      - run: dotnet publish agent/Workforce.Agent/Workforce.Agent.csproj -c Release -r win-x64 --self-contained false
+      - run: dotnet publish agent/Workforce.SessionAgent/Workforce.SessionAgent.csproj -c Release -r win-x64 --self-contained false
+      - run: choco install ffmpeg -y --no-progress
+      - shell: pwsh
+        run: ./installer/build.ps1
+      - name: Import release signing certificate
+        if: ${{ env.SIGNING_CERT_BASE64 != '' }}
+        shell: pwsh
+        env:
+          SIGNING_CERT_BASE64: ${{ secrets.WINDOWS_SIGNING_CERT_BASE64 }}
+          SIGNING_CERT_PASSWORD: ${{ secrets.WINDOWS_SIGNING_CERT_PASSWORD }}
+        run: |
+          $bytes = [Convert]::FromBase64String($env:SIGNING_CERT_BASE64)
+          $path = Join-Path $env:RUNNER_TEMP "workforce-signing.pfx"
+          [IO.File]::WriteAllBytes($path, $bytes)
+          $password = ConvertTo-SecureString $env:SIGNING_CERT_PASSWORD -AsPlainText -Force
+          $certificate = Import-PfxCertificate -FilePath $path -CertStoreLocation Cert:\CurrentUser\My -Password $password
+          "WINDOWS_SIGNING_CERT_THUMBPRINT=$($certificate.Thumbprint)" | Out-File $env:GITHUB_ENV -Append
+          Remove-Item $path -Force
+      - name: Sign and verify MSI
+        if: ${{ env.WINDOWS_SIGNING_CERT_THUMBPRINT != '' }}
+        shell: pwsh
+        run: |
+          $msi = Get-ChildItem installer\Workforce.Agent.Installer\bin\Release -Filter *.msi -Recurse | Select-Object -First 1
+          ./installer/sign.ps1 -MsiPath $msi.FullName
+      - uses: actions/upload-artifact@v4
+        with:
+          name: workforce-agent-msi
+          path: installer/Workforce.Agent.Installer/bin/Release/**/*.msi

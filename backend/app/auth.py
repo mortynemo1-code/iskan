@@ -239,7 +239,7 @@ async def _create_session(
         family_id,
         user.id,
         hash_refresh_token(refresh, settings.jwt_secret),
-        f"{settings.refresh_token_days} days",
+        refresh_lifetime,
         _client_ip(request),
         request.headers.get("User-Agent", "")[:500],
     )

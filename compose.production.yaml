@@ -1,17 +1,36 @@
+# The json-file driver keeps every line forever by default, so one chatty container
+# can fill the host disk and take PostgreSQL down with it. Cap each service instead.
+x-logging: &logging
+  driver: json-file
+  options:
+    max-size: "20m"
+    max-file: "5"
+
 services:
   postgres:
     ports: []
+    logging: *logging
   redis:
     ports: []
+    logging: *logging
   minio:
     ports: []
+    logging: *logging
+  mediamtx:
+    logging: *logging
+  web:
+    logging: *logging
+  worker:
+    logging: *logging
   api:
+    logging: *logging
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/api/v1/ready', timeout=4)"]
       interval: 15s
       timeout: 5s
       retries: 10
   nginx:
+    logging: *logging
     ports:
       - "80:80"
       - "443:443"

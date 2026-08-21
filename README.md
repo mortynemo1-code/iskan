@@ -60,6 +60,7 @@ make simulate TOKEN=<INSTALLATION_TOKEN>
 - [Руководитель и HR](docs/USER_GUIDE.md)
 - [Сотрудник](docs/EMPLOYEE_GUIDE.md)
 - [Массовая установка](docs/MASS_DEPLOYMENT.md)
+- [Сборка Windows-агента](docs/AGENT_BUILD.md)
 - [Архитектура](docs/ARCHITECTURE.md)
 - [Безопасность](docs/SECURITY.md)
 - [Персональные данные](docs/PRIVACY_DATA.md)

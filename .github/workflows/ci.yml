@@ -51,9 +51,9 @@ jobs:
         if: ${{ env.WINDOWS_SIGNING_CERT_THUMBPRINT != '' }}
         shell: pwsh
         run: |
-          $msi = Get-ChildItem installer\Workforce.Agent.Installer\bin\Release -Filter *.msi -Recurse | Select-Object -First 1
+          $msi = Get-ChildItem installer\Workforce.Agent.Installer\bin -Filter *.msi -Recurse | Select-Object -First 1
           ./installer/sign.ps1 -MsiPath $msi.FullName
       - uses: actions/upload-artifact@v4
         with:
           name: workforce-agent-msi
-          path: installer/Workforce.Agent.Installer/bin/Release/**/*.msi
+          path: installer/Workforce.Agent.Installer/bin/**/*.msi

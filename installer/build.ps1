@@ -19,7 +19,9 @@ if ([string]::IsNullOrWhiteSpace($FfmpegPath) -or -not (Test-Path $FfmpegPath)) 
 }
 Copy-Item $FfmpegPath "$publish\session\ffmpeg.exe" -Force
 dotnet build "$PSScriptRoot\Workforce.Agent.Installer\Workforce.Agent.Installer.wixproj" -c $Configuration -p:Version=$Version -p:AgentPublish="$publish\service" -p:SessionPublish="$publish\session"
-$msi = Get-ChildItem "$PSScriptRoot\Workforce.Agent.Installer\bin\$Configuration" -Filter *.msi -Recurse |
+# WiX nests the output under the platform when Platform is set, so bin\x64\Release --
+# not bin\Release. Search the whole bin tree and take the newest match.
+$msi = Get-ChildItem "$PSScriptRoot\Workforce.Agent.Installer\bin" -Filter *.msi -Recurse |
   Sort-Object LastWriteTime -Descending |
   Select-Object -First 1
 if (-not $msi) { throw "MSI was not produced" }

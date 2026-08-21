@@ -26,7 +26,7 @@ MAX_THUMB_BYTES = 1 * 1024 * 1024
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection():
+    async with connection() as conn:
         yield conn
 
 

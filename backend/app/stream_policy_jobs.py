@@ -69,7 +69,7 @@ async def _resolved_config(conn: asyncpg.Connection, employee_id, department_id)
 
 async def run_stream_policy_once(now: datetime | None = None) -> None:
     now = now or datetime.now(UTC); settings = get_settings()
-    async for conn in connection():
+    async with connection() as conn:
         devices = await conn.fetch(
             """SELECT d.id,d.employee_id,d.last_seen,d.last_activity_state,e.department_id,e.timezone,
                       (SELECT s.rules_json FROM schedule_assignments sa JOIN schedules s ON s.id=sa.schedule_id

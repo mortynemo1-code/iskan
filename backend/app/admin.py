@@ -41,7 +41,7 @@ router = APIRouter(
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection():
+    async with connection() as conn:
         yield conn
 
 

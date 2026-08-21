@@ -130,11 +130,10 @@ async def detect_discipline_for_day(conn: asyncpg.Connection, day: date, now: da
 async def discipline_worker() -> None:
     while True:
         try:
-            async for conn in connection():
+            async with connection() as conn:
                 today = datetime.now(UTC).date()
                 await detect_discipline_for_day(conn, today - timedelta(days=1))
                 await detect_discipline_for_day(conn, today)
-                break
         except asyncio.CancelledError:
             raise
         except Exception:

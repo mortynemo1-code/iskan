@@ -22,7 +22,7 @@ async def index_stream_segments_once() -> int:
     if not root.is_dir(): return 0
     indexed = 0
     storage = ObjectStorage()
-    async for conn in connection():
+    async with connection() as conn:
         sessions = await conn.fetch("SELECT id,stream_key FROM stream_sessions")
         for session in sessions:
             directory = (root / session["stream_key"]).resolve()

@@ -14,7 +14,7 @@ class StoredEvent:
 
 
 async def run_next_reclassification() -> bool:
-    async for conn in connection():
+    async with connection() as conn:
         job = await conn.fetchrow(
             """UPDATE reclassification_jobs SET status='running',started_at=now()
                WHERE id=(SELECT id FROM reclassification_jobs WHERE status='queued' ORDER BY created_at LIMIT 1 FOR UPDATE SKIP LOCKED)

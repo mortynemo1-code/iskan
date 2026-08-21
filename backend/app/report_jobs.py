@@ -63,7 +63,7 @@ def send_email(subject: str, summary: str, recipients: list[str], filename: str,
 
 async def process_report_schedules() -> int:
     processed = 0
-    async for conn in connection():
+    async with connection() as conn:
         schedules = await conn.fetch(
             """SELECT * FROM report_schedules WHERE enabled=true AND COALESCE(next_run_at,now())<=now()
                ORDER BY next_run_at NULLS FIRST LIMIT 10 FOR UPDATE SKIP LOCKED"""
@@ -92,7 +92,6 @@ async def process_report_schedules() -> int:
             try: next_run = next_cron_after(schedule["cron"], datetime.now(UTC))
             except ValueError: next_run = datetime.now(UTC) + timedelta(days=1)
             await conn.execute("UPDATE report_schedules SET last_run_at=now(),next_run_at=$2 WHERE id=$1", schedule["id"], next_run)
-        break
     return processed
 
 

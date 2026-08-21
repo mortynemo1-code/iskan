@@ -143,7 +143,7 @@ app.include_router(settings_router)
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection():
+    async with connection() as conn:
         yield conn
 
 
@@ -713,7 +713,7 @@ async def presence_socket(websocket: WebSocket) -> None:
         await websocket.close(code=4401)
         return
     try:
-        async for conn in connection():
+        async with connection() as conn:
             user = await authenticate_access_token(conn, token, get_settings())
             if "presence:view" not in user.permissions:
                 await websocket.close(code=4403)
@@ -725,7 +725,7 @@ async def presence_socket(websocket: WebSocket) -> None:
     try:
         while True:
             # A snapshot makes reconnects and missed pub/sub messages harmless.
-            async for conn in connection():
+            async with connection() as conn:
                 try:
                     user = await authenticate_access_token(conn, token, get_settings())
                 except HTTPException:
@@ -744,18 +744,17 @@ async def notifications_socket(websocket: WebSocket) -> None:
     if not token:
         await websocket.close(code=4401); return
     try:
-        async for conn in connection():
+        async with connection() as conn:
             user = await authenticate_access_token(conn, token, get_settings())
             if "timeline:view" not in user.permissions:
                 await websocket.close(code=4403); return
-            break
     except HTTPException:
         await websocket.close(code=4401); return
     await websocket.accept()
     last_id = -1
     try:
         while True:
-            async for conn in connection():
+            async with connection() as conn:
                 rows = await conn.fetch(
                     """SELECT id,notification_type,payload_json AS payload,is_read,created_at
                        FROM notifications WHERE user_id=$1 ORDER BY created_at DESC LIMIT 50""", user.id,

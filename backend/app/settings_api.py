@@ -25,7 +25,7 @@ router = APIRouter(prefix="/api/v1", tags=["settings"])
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection(): yield conn
+    async with connection() as conn: yield conn
 
 
 async def setting_audit(conn: asyncpg.Connection, user: CurrentUser, action: str, object_type: str, object_id: str, details: dict | None = None) -> None:

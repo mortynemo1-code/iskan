@@ -129,7 +129,7 @@ async def purge_storage_pressure(conn) -> int:
 
 
 async def run_retention_once() -> dict[str, int]:
-    async for conn in connection():
+    async with connection() as conn:
         result = {"screenshots": await purge_screenshots(conn), "events": await purge_events(conn), "video": await purge_video_files(conn)}
         result["video_pressure"] = await purge_storage_pressure(conn)
         await conn.execute("""INSERT INTO audit_log(action,object_type,object_id,details_json)

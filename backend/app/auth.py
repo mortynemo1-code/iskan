@@ -67,7 +67,7 @@ class CurrentUser:
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection():
+    async with connection() as conn:
         yield conn
 
 
@@ -434,7 +434,7 @@ async def me(user: CurrentUser = Depends(current_user)) -> UserInfo:
 async def ensure_bootstrap_admin(settings: Settings) -> None:
     if not settings.bootstrap_admin_login or not settings.bootstrap_admin_password:
         return
-    async for conn in connection():
+    async with connection() as conn:
         if await conn.fetchval("SELECT EXISTS(SELECT 1 FROM users)"):
             return
         password_hash = hash_password(settings.bootstrap_admin_password)

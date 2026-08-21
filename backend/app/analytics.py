@@ -27,7 +27,7 @@ router = APIRouter(prefix="/api/v1", tags=["analytics"])
 
 
 async def db() -> asyncpg.Connection:
-    async for conn in connection():
+    async with connection() as conn:
         yield conn
 
 

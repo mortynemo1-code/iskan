@@ -4,9 +4,11 @@
     <Platform>x64</Platform>
     <Cultures>ru-RU</Cultures>
     <Version Condition="'$(Version)' == ''">1.0.0</Version>
-    <DefineConstants>ProductVersion=$(Version)</DefineConstants>
     <AgentPublish Condition="'$(AgentPublish)' == ''">..\..\publish\service</AgentPublish>
     <SessionPublish Condition="'$(SessionPublish)' == ''">..\..\publish\session</SessionPublish>
+    <!-- Package.wxs reads these as $(var.*), which WiX resolves from DefineConstants only.
+         MSBuild evaluates in order, so this must follow the paths it consumes. -->
+    <DefineConstants>ProductVersion=$(Version);AgentPublish=$(AgentPublish);SessionPublish=$(SessionPublish)</DefineConstants>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WixToolset.Util.wixext" Version="5.0.2" />

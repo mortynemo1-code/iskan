@@ -40,9 +40,13 @@
     </DirectoryRef>
 
     <DirectoryRef Id="SESSIONFOLDER">
+      <!-- ffmpeg.exe carries its own version resource, so it cannot ride along in a
+           component with an auto-generated guid. It gets a component of its own. -->
       <Component Id="SessionAgent" Guid="*" Bitness="always64">
         <File Id="SessionExe" Source="$(var.SessionPublish)\Workforce.SessionAgent.exe" KeyPath="yes" />
-        <File Id="FfmpegExe" Source="$(var.SessionPublish)\ffmpeg.exe" />
+      </Component>
+      <Component Id="SessionFfmpeg" Guid="*" Bitness="always64">
+        <File Id="FfmpegExe" Source="$(var.SessionPublish)\ffmpeg.exe" KeyPath="yes" />
       </Component>
     </DirectoryRef>
 
@@ -58,6 +62,7 @@
     <Feature Id="MainFeature" Title="Workforce Monitoring Agent" Level="1">
       <ComponentRef Id="AgentService" />
       <ComponentRef Id="SessionAgent" />
+      <ComponentRef Id="SessionFfmpeg" />
       <ComponentRef Id="DataDirectory" />
     </Feature>
   </Package>

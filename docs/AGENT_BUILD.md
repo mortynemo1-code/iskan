@@ -200,10 +200,23 @@ $env:FFMPEG_PATH = "C:\ffmpeg\bin\ffmpeg.exe"
 
 Тихая установка без диалогов — подробности в [MASS_DEPLOYMENT.md](MASS_DEPLOYMENT.md):
 
+```powershell
+msiexec /i Workforce.Agent.Installer.msi /qn /norestart `
+  TOKEN="<installation-token>" SERVER="https://monitoring.company.local"
 ```
-msiexec /i WorkforceAgent.msi /qn ^
-  SERVER_URL=https://monitoring.company.local ^
-  INSTALLATION_TOKEN=<токен>
+
+Свойства называются именно `TOKEN` и `SERVER`. Без `TOKEN` установка откажется идти — в пакете стоит проверка `Launch Condition`.
+
+Если сервер отдаёт самоподписанный сертификат, добавьте пиннинг по отпечатку — тогда сертификат не нужно класть в доверенные корневые:
+
+```powershell
+setx /m Agent__ServerCertificateSha256 "<sha256-отпечаток>"
+```
+
+Отпечаток снимается на сервере:
+
+```bash
+openssl x509 -in ~/iskan/infra/tls/fullchain.pem -noout -fingerprint -sha256
 ```
 
 Токен установки — это значение `INSTALLATION_TOKEN` из файла `.env` на сервере. Он общий для всех устанавливаемых агентов и сверяется сервером напрямую при регистрации, а не выпускается в админке. После регистрации агент получает собственный device-токен и `INSTALLATION_TOKEN` больше не использует.

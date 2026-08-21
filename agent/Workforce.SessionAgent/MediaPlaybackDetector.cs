@@ -1,4 +1,5 @@
 using NAudio.CoreAudioApi;
+using NAudio.CoreAudioApi.Interfaces;
 
 namespace Workforce.SessionAgent;
 
